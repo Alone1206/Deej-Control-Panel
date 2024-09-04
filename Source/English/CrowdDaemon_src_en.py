@@ -75,11 +75,25 @@ def save_com_port():
     else:
         messagebox.showerror("Error", "COM Port not specified!")
 
-# Set slider 1 to "master"
-def set_slider_1_to_master():
-    config['slider_mapping'][1] = 'master'
+# Save baud_rate, invert_sliders, and noise_reduction individually
+def save_baud_rate():
+    try:
+        baud_rate = int(baud_rate_var.get())
+        config['baud_rate'] = baud_rate
+        save_config(config)
+        messagebox.showinfo("Info", "Baud rate updated successfully!")
+    except ValueError:
+        messagebox.showerror("Error", "Invalid baud rate value!")
+
+def save_invert_sliders():
+    config['invert_sliders'] = invert_sliders_var.get()
     save_config(config)
-    load_ui()
+    messagebox.showinfo("Info", "Invert sliders setting updated successfully!")
+
+def save_noise_reduction():
+    config['noise_reduction'] = noise_reduction_var.get()
+    save_config(config)
+    messagebox.showinfo("Info", "Noise reduction setting updated successfully!")
 
 # Create a styled frame for better appearance
 def create_styled_frame(parent, padding=(10, 10)):
@@ -110,27 +124,35 @@ def load_ui():
 
         create_styled_button(slider_frame, "Update", lambda si=slider_index, av=app_var: update_app(si, av.get())).grid(row=slider_index, column=2, padx=5, pady=5)
 
-        if slider_index == 1:
-            create_styled_button(slider_frame, "Set as master volume", set_slider_1_to_master).grid(row=slider_index, column=3, padx=5, pady=5)
+    # Baud Rate
+    global baud_rate_var
+    baud_rate_var = tk.StringVar(value=str(config.get('baud_rate', '9600')))
+    tk.Label(frame, text="Baud Rate:").grid(row=len(config['slider_mapping']) + 1, column=0, padx=5, pady=5, sticky="w")
+    baud_rate_entry = ttk.Entry(frame, textvariable=baud_rate_var)
+    baud_rate_entry.grid(row=len(config['slider_mapping']) + 1, column=1, padx=5, pady=5, sticky="ew")
+    create_styled_button(frame, "Save Baud Rate", save_baud_rate).grid(row=len(config['slider_mapping']) + 1, column=2, padx=5, pady=5)
 
-    # COM port selection
-    com_port_frame = create_styled_frame(frame, (10, 10))
-    tk.Label(com_port_frame, text=" COM Port Selector").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-    
-    global com_port_var
-    com_port_var = tk.StringVar(value=config.get('com_port', ''))
-    global com_port_dropdown
-    com_port_dropdown = ttk.Combobox(com_port_frame, textvariable=com_port_var)
-    com_port_dropdown['values'] = get_com_ports()
-    com_port_dropdown.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+    # Invert Sliders
+    global invert_sliders_var
+    invert_sliders_var = tk.BooleanVar(value=config.get('invert_sliders', False))
+    tk.Label(frame, text="Invert Sliders:").grid(row=len(config['slider_mapping']) + 2, column=0, padx=5, pady=5, sticky="w")
+    invert_sliders_checkbox = ttk.Checkbutton(frame, variable=invert_sliders_var)
+    invert_sliders_checkbox.grid(row=len(config['slider_mapping']) + 2, column=1, padx=5, pady=5, sticky="w")
+    create_styled_button(frame, "Save Invert Sliders", save_invert_sliders).grid(row=len(config['slider_mapping']) + 2, column=2, padx=5, pady=5)
 
-    create_styled_button(com_port_frame, "Refresh ports", refresh_com_ports).grid(row=0, column=2, padx=5, pady=5)
-    create_styled_button(com_port_frame, "Save port", save_com_port).grid(row=0, column=3, padx=5, pady=5)
+    # Noise Reduction
+    global noise_reduction_var
+    noise_reduction_var = tk.StringVar(value=config.get('noise_reduction', 'high'))
+    tk.Label(frame, text="Noise Reduction:").grid(row=len(config['slider_mapping']) + 3, column=0, padx=5, pady=5, sticky="w")
+    noise_reduction_dropdown = ttk.Combobox(frame, textvariable=noise_reduction_var)
+    noise_reduction_dropdown['values'] = ['low', 'medium', 'high']
+    noise_reduction_dropdown.grid(row=len(config['slider_mapping']) + 3, column=1, padx=5, pady=5, sticky="ew")
+    create_styled_button(frame, "Save Noise Reduction", save_noise_reduction).grid(row=len(config['slider_mapping']) + 3, column=2, padx=5, pady=5)
 
     # Action buttons
-    create_styled_button(frame, "Run deej", run_deej).grid(row=len(config['slider_mapping']) + 1, column=0, columnspan=4, pady=5, sticky="ew")
-    create_styled_button(frame, "Close deej", kill_deej).grid(row=len(config['slider_mapping']) + 2, column=0, columnspan=4, pady=5, sticky="ew")
-    print("Designed by Mert Ata Baber for CrowdDaemon")
+    create_styled_button(frame, "Run deej", run_deej).grid(row=len(config['slider_mapping']) + 4, column=0, columnspan=4, pady=5, sticky="ew")
+    create_styled_button(frame, "Close deej", kill_deej).grid(row=len(config['slider_mapping']) + 5, column=0, columnspan=4, pady=5, sticky="ew")
+
 # Initialize the main window
 root = tk.Tk()
 root.title("CrowdDaemon Audio Control Program")
